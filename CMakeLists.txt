@@ -34,3 +34,7 @@ target_link_libraries(LearnVulkan PRIVATE
     glm
     Vulkan::Vulkan
 )
+
+target_compile_definitions(LearnVulkan PUBLIC
+    SHADERS_DIR="${CMAKE_SOURCE_DIR}/shaders"
+)
