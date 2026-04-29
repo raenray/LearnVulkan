@@ -21,4 +21,6 @@ sudo dnf install libXinerama-devel
 sudo dnf install libXcursor-devel
 sudo dnf install libXi-devel
 sudo dnf install mesa-libGL-devel
+sudo dnf install wayland-devel
+sudo dnf install wayland-scanner
 ```
