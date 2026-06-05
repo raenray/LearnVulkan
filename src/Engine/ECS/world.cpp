@@ -1,6 +1,7 @@
 #include "Engine/ECS/world.hpp"
 #include <typeinfo>
 #include <stdexcept>
+#include <cstring>
 
 namespace Engine
 {
@@ -13,7 +14,9 @@ Entity World::createEntity(const std::string& tag)
     entities_.push_back(e);
     if (!tag.empty())
     {
-        setComponent<TagComponent>(e, {tag});
+        TagComponent tc;
+        strncpy(tc.tag, tag.c_str(), sizeof(tc.tag) - 1);
+        setComponent<TagComponent>(e, tc);
     }
     return e;
 }

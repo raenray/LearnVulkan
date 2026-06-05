@@ -78,11 +78,11 @@ private:
         bool has(Entity e) const override { return data.find(e) != data.end(); }
     };
 
-    // Map from type index to storage
-    std::unordered_map<uint32_t, std::unique_ptr<ComponentStorageBase>> storages_;
+    // Map from type hash to storage
+    std::unordered_map<size_t, std::unique_ptr<ComponentStorageBase>> storages_;
 
     template <typename T>
-    static uint32_t typeId();
+    static size_t typeId();
 
     template <typename T>
     ComponentStorage<T>& storage();
@@ -93,25 +93,15 @@ private:
 // --- Template implementations ---
 
 template <typename T>
-uint32_t World::typeId()
+size_t World::typeId()
 {
-    static uint32_t id = 0;
-    // For simplicity, use a local static counter. In production, use type_index.
-    // This works as long as we don't have DLL boundaries.
-    static std::unordered_map<size_t, uint32_t> map;
-    size_t hash = typeid(T).hash_code();
-    auto it = map.find(hash);
-    if (it != map.end())
-        return it->second;
-    uint32_t newId = static_cast<uint32_t>(map.size());
-    map[hash] = newId;
-    return newId;
+    return typeid(T).hash_code();
 }
 
 template <typename T>
 World::ComponentStorage<T>& World::storage()
 {
-    uint32_t id = typeId<T>();
+    size_t id = typeId<T>();
     auto it = storages_.find(id);
     if (it == storages_.end())
     {
@@ -124,7 +114,7 @@ World::ComponentStorage<T>& World::storage()
 template <typename T>
 const World::ComponentStorage<T>& World::storage() const
 {
-    uint32_t id = typeId<T>();
+    size_t id = typeId<T>();
     auto it = storages_.find(id);
     static ComponentStorage<T> empty;
     if (it == storages_.end())

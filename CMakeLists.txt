@@ -45,10 +45,14 @@ add_executable(LearnVulkan
     src/Engine/Renderer/Resource/gpu_sampler.cpp
     src/Engine/Renderer/Shader/shader_manager.cpp
     src/Engine/Renderer/Pipeline/pipeline_cache.cpp
+    src/Engine/Renderer/Mesh/mesh.cpp
+    src/Engine/Renderer/Mesh/mesh_cache.cpp
+    src/Engine/Renderer/Mesh/scene_renderer.cpp
     src/Engine/ECS/world.cpp
     src/Engine/Scene/scene.cpp
     src/Engine/Asset/asset_loader.cpp
     src/Engine/Editor/editor.cpp
+    src/Engine/Game/game.cpp
     ${imgui_SOURCE_DIR}/imgui.cpp
     ${imgui_SOURCE_DIR}/imgui_draw.cpp
     ${imgui_SOURCE_DIR}/imgui_tables.cpp
@@ -67,4 +71,4 @@ target_include_directories(LearnVulkan PRIVATE
     ${cgltf_SOURCE_DIR} ${stb_SOURCE_DIR} ${imgui_SOURCE_DIR} ${imgui_SOURCE_DIR}/backends
 )
 
-target_compile_definitions(LearnVulkan PUBLIC SHADERS_DIR="${CMAKE_SOURCE_DIR}/shaders")
+target_compile_definitions(LearnVulkan PUBLIC SHADERS_DIR="${CMAKE_SOURCE_DIR}/shaders" ASSETS_DIR="${CMAKE_SOURCE_DIR}/assets")

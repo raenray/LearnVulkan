@@ -13,7 +13,7 @@ namespace ECS
 
 struct TagComponent
 {
-    std::string tag;
+    char tag[64] = {};
 };
 
 // --- Transform ---
@@ -37,8 +37,8 @@ struct TransformComponent
 
 struct MeshComponent
 {
-    std::string meshId;     // Asset identifier
-    std::string materialId; // Material identifier
+    char meshId[64] = {};
+    char materialId[64] = {};
     bool visible = true;
     bool castShadow = true;
 };
@@ -83,10 +83,10 @@ struct LightComponent
 
 struct MaterialComponent
 {
-    std::string albedoTexture;
-    std::string normalTexture;
-    std::string metallicRoughnessTexture;
-    std::string aoTexture;
+    char albedoTexture[128] = {};
+    char normalTexture[128] = {};
+    char metallicRoughnessTexture[128] = {};
+    char aoTexture[128] = {};
     glm::vec4 albedoFactor{1.0f};
     float metallicFactor = 1.0f;
     float roughnessFactor = 1.0f;

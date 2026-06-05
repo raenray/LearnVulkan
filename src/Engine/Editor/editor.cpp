@@ -6,6 +6,7 @@
 #include <glm/glm.hpp>
 #include <cstdio>
 #include <cstdarg>
+#include <fstream>
 
 namespace Engine
 {
@@ -31,15 +32,36 @@ void EditorUI::init(GLFWwindow* w, VkInstance inst, VkPhysicalDevice pd, VkDevic
     ImGuiIO& io = ImGui::GetIO();
     // io.IniFilename = nullptr;
     ImGui::StyleColorsDark();
-    // Detect DPI from GLFW and set font scale
+
+    // ── DPI-aware font size ────────────────────────────────────────
     float xs = 1, ys = 1;
     glfwGetWindowContentScale(w, &xs, &ys);
-    fontScale_ = (xs + ys) / 2.0f;
-    if (fontScale_ < 1.0f)
-        fontScale_ = 1.0f;
-    if (fontScale_ > 3.0f)
-        fontScale_ = 3.0f;
-    io.FontGlobalScale = fontScale_;
+    float dpi = (xs + ys) / 2.0f;
+    if (dpi < 1.0f)
+        dpi = 1.0f;
+    if (dpi > 3.0f)
+        dpi = 3.0f;
+    float fontSize = 16.0f * dpi;
+    fontScale_ = 1.0f; // combo starts at 100%; size already accounts for DPI
+
+    // ── Load custom font with Chinese glyph support ────────────────
+    const char* fontPath = ASSETS_DIR "/fonts/MapleMono-NF-CN-unhinted/MapleMono-NF-CN-Light.ttf";
+    std::ifstream test(fontPath, std::ios::binary);
+    if (test.good())
+    {
+        test.close();
+        io.Fonts->AddFontFromFileTTF(fontPath, fontSize, nullptr, io.Fonts->GetGlyphRangesChineseFull());
+        io.FontGlobalScale = 1.0f;
+    }
+    else
+    {
+        // Fallback: default ImGui font
+        io.Fonts->AddFontDefault();
+        io.FontGlobalScale = dpi;
+        fontScale_ = dpi;
+        fprintf(stderr, "[Editor] Font not found: %s — using default\n", fontPath);
+    }
+
     ImGui_ImplGlfw_InitForVulkan(w, true);
     ImGui_ImplVulkan_InitInfo ii{};
     ii.ApiVersion = VK_API_VERSION_1_0;
@@ -261,8 +283,15 @@ void EditorUI::drawViewport()
     ImVec2 sz = ImGui::GetContentRegionAvail();
     if (sz.x > 0 && sz.y > 0)
     {
-        ImGui::Text("3D Viewport (%dx%d)", (int) sz.x, (int) sz.y);
-        ImGui::TextDisabled("(rendered to swapchain)");
+        float fps = frameTime_ > 0.0f ? 1000.0f / frameTime_ : 0.0f;
+        ImVec4 fpsColor = fps >= 55.0f   ? ImVec4{0.2f, 1.0f, 0.3f, 1.0f}
+                          : fps >= 25.0f ? ImVec4{1.0f, 1.0f, 0.0f, 1.0f}
+                                         : ImVec4{1.0f, 0.2f, 0.2f, 1.0f};
+        ImGui::Text("3D Viewport (%dx%d)  |  ", (int) sz.x, (int) sz.y);
+        ImGui::SameLine(0, 0);
+        ImGui::TextColored(fpsColor, "%.0f FPS", fps);
+        ImGui::SameLine(0, 0);
+        ImGui::Text("  |  %.1f ms  |  %u draws", frameTime_, drawCalls_);
     }
     ImGui::End();
     ImGui::PopStyleVar();
