@@ -7,12 +7,16 @@
 #include <vector>
 #include <memory>
 
-namespace Engine { namespace Scene {
+namespace Engine
+{
+namespace Scene
+{
 
 // High-level scene graph node. Wraps an ECS entity and provides a hierarchical
 // transform system with parent-child relationships.
 
-class SceneNode {
+class SceneNode
+{
 public:
     SceneNode(ECS::World& world, ECS::Entity entity);
     ~SceneNode() = default;
@@ -21,8 +25,11 @@ public:
 
     // Hierarchy
     void setParent(SceneNode* parent);
+
     SceneNode* parent() const { return parent_; }
+
     const std::vector<SceneNode*>& children() const { return children_; }
+
     void addChild(SceneNode* child);
 
     // Transform helpers
@@ -36,7 +43,7 @@ public:
     void setScale(const glm::vec3& s);
 
     // Utility: iterate subtree
-    template<typename Func>
+    template <typename Func>
     void traverse(Func&& func); // func(SceneNode&)
 
 private:
@@ -47,12 +54,14 @@ private:
 };
 
 // Scene manages a collection of scene nodes backed by an ECS World
-class Scene {
+class Scene
+{
 public:
     Scene();
     ~Scene();
 
     ECS::World& world() { return world_; }
+
     const ECS::World& world() const { return world_; }
 
     SceneNode* createNode(const std::string& tag = "");
@@ -73,4 +82,5 @@ private:
     std::vector<std::unique_ptr<SceneNode>> nodes_;
 };
 
-} }
+} // namespace Scene
+} // namespace Engine

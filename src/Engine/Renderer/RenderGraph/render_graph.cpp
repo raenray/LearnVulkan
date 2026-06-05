@@ -2,28 +2,45 @@
 #include <stdexcept>
 #include <cstring>
 
-namespace Engine { namespace Renderer {
+namespace Engine
+{
+namespace Renderer
+{
 
 RenderGraph::RenderGraph(VkDevice device, VkPhysicalDevice physicalDevice)
-    : device_(device), physicalDevice_(physicalDevice) {}
+    : device_(device)
+    , physicalDevice_(physicalDevice)
+{
+}
 
-RenderGraph::~RenderGraph() {
-    for (auto& img : images_) {
-        if (img.owned) {
-            if (img.view) vkDestroyImageView(device_, img.view, nullptr);
-            if (img.image) vkDestroyImage(device_, img.image, nullptr);
-            if (img.memory) vkFreeMemory(device_, img.memory, nullptr);
+RenderGraph::~RenderGraph()
+{
+    for (auto& img : images_)
+    {
+        if (img.owned)
+        {
+            if (img.view)
+                vkDestroyImageView(device_, img.view, nullptr);
+            if (img.image)
+                vkDestroyImage(device_, img.image, nullptr);
+            if (img.memory)
+                vkFreeMemory(device_, img.memory, nullptr);
         }
     }
-    for (auto& buf : buffers_) {
-        if (buf.owned) {
-            if (buf.buffer) vkDestroyBuffer(device_, buf.buffer, nullptr);
-            if (buf.memory) vkFreeMemory(device_, buf.memory, nullptr);
+    for (auto& buf : buffers_)
+    {
+        if (buf.owned)
+        {
+            if (buf.buffer)
+                vkDestroyBuffer(device_, buf.buffer, nullptr);
+            if (buf.memory)
+                vkFreeMemory(device_, buf.memory, nullptr);
         }
     }
 }
 
-RGHandle RenderGraph::createImage(const std::string& name, const RGImageDesc& desc) {
+RGHandle RenderGraph::createImage(const std::string& name, const RGImageDesc& desc)
+{
     ImageResource res;
     res.name = name;
     res.desc = desc;
@@ -51,7 +68,8 @@ RGHandle RenderGraph::createImage(const std::string& name, const RGImageDesc& de
     VkPhysicalDeviceMemoryProperties memProps;
     vkGetPhysicalDeviceMemoryProperties(physicalDevice_, &memProps);
     uint32_t memTypeIndex = 0;
-    for (; memTypeIndex < memProps.memoryTypeCount; ++memTypeIndex) {
+    for (; memTypeIndex < memProps.memoryTypeCount; ++memTypeIndex)
+    {
         if ((memReq.memoryTypeBits & (1 << memTypeIndex)) &&
             (memProps.memoryTypes[memTypeIndex].propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT))
             break;
@@ -86,7 +104,8 @@ RGHandle RenderGraph::createImage(const std::string& name, const RGImageDesc& de
     return h;
 }
 
-RGHandle RenderGraph::createBuffer(const std::string& name, const RGBufferDesc& desc) {
+RGHandle RenderGraph::createBuffer(const std::string& name, const RGBufferDesc& desc)
+{
     BufferResource res;
     res.name = name;
     res.desc = desc;
@@ -107,10 +126,10 @@ RGHandle RenderGraph::createBuffer(const std::string& name, const RGBufferDesc& 
     VkPhysicalDeviceMemoryProperties memProps;
     vkGetPhysicalDeviceMemoryProperties(physicalDevice_, &memProps);
     uint32_t memTypeIndex = 0;
-    for (; memTypeIndex < memProps.memoryTypeCount; ++memTypeIndex) {
+    for (; memTypeIndex < memProps.memoryTypeCount; ++memTypeIndex)
+    {
         if ((memReq.memoryTypeBits & (1 << memTypeIndex)) &&
-            (memProps.memoryTypes[memTypeIndex].propertyFlags &
-             (VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)))
+            (memProps.memoryTypes[memTypeIndex].propertyFlags & (VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)))
             break;
     }
 
@@ -129,8 +148,8 @@ RGHandle RenderGraph::createBuffer(const std::string& name, const RGBufferDesc& 
     return h;
 }
 
-RGHandle RenderGraph::importImage(const std::string& name, VkImage image, VkImageView view,
-                                   const RGImageDesc& desc, VkImageLayout currentLayout) {
+RGHandle RenderGraph::importImage(const std::string& name, VkImage image, VkImageView view, const RGImageDesc& desc, VkImageLayout currentLayout)
+{
     ImageResource res;
     res.name = name;
     res.image = image;
@@ -145,32 +164,43 @@ RGHandle RenderGraph::importImage(const std::string& name, VkImage image, VkImag
     return h;
 }
 
-VkImage RenderGraph::getImage(RGHandle h) const {
+VkImage RenderGraph::getImage(RGHandle h) const
+{
     return (h.valid() && h.index < images_.size()) ? images_[h.index].image : VK_NULL_HANDLE;
 }
 
-VkImageView RenderGraph::getImageView(RGHandle h) const {
+VkImageView RenderGraph::getImageView(RGHandle h) const
+{
     return (h.valid() && h.index < images_.size()) ? images_[h.index].view : VK_NULL_HANDLE;
 }
 
-VkBuffer RenderGraph::getBuffer(RGHandle h) const {
+VkBuffer RenderGraph::getBuffer(RGHandle h) const
+{
     return (h.valid() && h.index < buffers_.size()) ? buffers_[h.index].buffer : VK_NULL_HANDLE;
 }
 
-void RenderGraph::beginFrame() {
+void RenderGraph::beginFrame()
+{
     // In a real engine, this would reset transient resources and free old ones.
     // For now, resources persist across frames.
 }
 
-void RenderGraph::compile() {
+void RenderGraph::compile()
+{
     // In a full engine, this would compile the graph: insert barriers, sort passes, etc.
 }
 
-void RenderGraph::imageBarrier(VkCommandBuffer cmd, RGHandle h,
-                                VkImageLayout oldLayout, VkImageLayout newLayout,
-                                VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage,
-                                VkAccessFlags srcAccess, VkAccessFlags dstAccess) {
-    if (!h.valid() || h.index >= images_.size()) return;
+void RenderGraph::imageBarrier(VkCommandBuffer cmd,
+                               RGHandle h,
+                               VkImageLayout oldLayout,
+                               VkImageLayout newLayout,
+                               VkPipelineStageFlags srcStage,
+                               VkPipelineStageFlags dstStage,
+                               VkAccessFlags srcAccess,
+                               VkAccessFlags dstAccess)
+{
+    if (!h.valid() || h.index >= images_.size())
+        return;
     auto& img = images_[h.index];
 
     VkImageMemoryBarrier barrier{};
@@ -192,4 +222,5 @@ void RenderGraph::imageBarrier(VkCommandBuffer cmd, RGHandle h,
     img.currentLayout = newLayout;
 }
 
-} }
+} // namespace Renderer
+} // namespace Engine

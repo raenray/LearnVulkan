@@ -6,12 +6,16 @@
 #include <cstdint>
 #include <memory>
 
-namespace Engine { namespace Renderer {
+namespace Engine
+{
+namespace Renderer
+{
 
 // Caches VkPipeline objects keyed by a hash of their create info.
 // Integrates with ShaderManager to avoid rebuilding pipelines every frame.
 
-class PipelineCache {
+class PipelineCache
+{
 public:
     PipelineCache(VkDevice device);
     ~PipelineCache();
@@ -45,4 +49,5 @@ private:
     std::unordered_map<std::string, VkPipeline> pipelines_;
 };
 
-} }
+} // namespace Renderer
+} // namespace Engine

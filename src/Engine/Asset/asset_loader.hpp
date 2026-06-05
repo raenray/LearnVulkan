@@ -5,12 +5,16 @@
 #include <memory>
 #include <unordered_map>
 
-namespace Engine { namespace Asset {
+namespace Engine
+{
+namespace Asset
+{
 
 // Simple asynchronous asset loader.
 // Supports GLTF meshes, textures (PNG/JPG/TGA via stb_image), and SPIR-V shaders.
 
-enum class AssetType : uint8_t {
+enum class AssetType : uint8_t
+{
     Unknown,
     Mesh,
     Texture,
@@ -18,13 +22,16 @@ enum class AssetType : uint8_t {
     Material,
 };
 
-struct AssetHandle {
+struct AssetHandle
+{
     uint32_t id = 0;
     AssetType type = AssetType::Unknown;
+
     bool valid() const { return id != 0; }
 };
 
-struct MeshData {
+struct MeshData
+{
     std::vector<float> positions;
     std::vector<float> normals;
     std::vector<float> texcoords;
@@ -33,21 +40,24 @@ struct MeshData {
     std::string materialId;
 };
 
-struct TextureData {
+struct TextureData
+{
     std::vector<uint8_t> pixels;
     uint32_t width = 0;
     uint32_t height = 0;
     uint32_t channels = 0;
 };
 
-struct MaterialData {
+struct MaterialData
+{
     std::string albedoTexturePath;
     std::string normalTexturePath;
     std::string metallicRoughnessTexturePath;
     std::string aoTexturePath;
 };
 
-class AssetLoader {
+class AssetLoader
+{
 public:
     AssetLoader();
     ~AssetLoader();
@@ -75,6 +85,7 @@ public:
     std::string resolvePath(const std::string& relativePath) const;
 
     using LoadCallback = std::function<void(AssetHandle)>;
+
     void setLoadCallback(LoadCallback cb) { loadCallback_ = std::move(cb); }
 
 private:
@@ -92,4 +103,5 @@ private:
     std::unordered_map<uint32_t, std::vector<char>> shaders_;
 };
 
-} }
+} // namespace Asset
+} // namespace Engine

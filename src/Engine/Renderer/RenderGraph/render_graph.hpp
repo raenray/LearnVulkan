@@ -6,18 +6,24 @@
 #include <unordered_map>
 #include <memory>
 
-namespace Engine { namespace Renderer {
+namespace Engine
+{
+namespace Renderer
+{
 
 // Lightweight frame-graph style resource manager for transient render targets
 // Tracks images, buffers, and barriers for a single frame's passes.
 // No complex graph scheduling — just a linear list of passes with resource handles.
 
-struct RGHandle {
+struct RGHandle
+{
     uint32_t index = ~0u;
+
     bool valid() const { return index != ~0u; }
 };
 
-struct RGImageDesc {
+struct RGImageDesc
+{
     VkFormat format = VK_FORMAT_UNDEFINED;
     VkExtent2D extent{};
     VkImageUsageFlags usage = 0;
@@ -27,12 +33,14 @@ struct RGImageDesc {
     VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT;
 };
 
-struct RGBufferDesc {
+struct RGBufferDesc
+{
     VkDeviceSize size = 0;
     VkBufferUsageFlags usage = 0;
 };
 
-class RenderGraph {
+class RenderGraph
+{
 public:
     RenderGraph(VkDevice device, VkPhysicalDevice physicalDevice);
     ~RenderGraph();
@@ -44,8 +52,7 @@ public:
     RGHandle createBuffer(const std::string& name, const RGBufferDesc& desc);
 
     // Import external resources (e.g. swapchain images)
-    RGHandle importImage(const std::string& name, VkImage image, VkImageView view,
-                         const RGImageDesc& desc, VkImageLayout currentLayout);
+    RGHandle importImage(const std::string& name, VkImage image, VkImageView view, const RGImageDesc& desc, VkImageLayout currentLayout);
 
     // Access underlying Vulkan resources
     VkImage getImage(RGHandle h) const;
@@ -60,13 +67,18 @@ public:
     void compile();
 
     // Barrier helper: insert an image memory barrier into the current command buffer
-    void imageBarrier(VkCommandBuffer cmd, RGHandle h,
-                      VkImageLayout oldLayout, VkImageLayout newLayout,
-                      VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage,
-                      VkAccessFlags srcAccess, VkAccessFlags dstAccess);
+    void imageBarrier(VkCommandBuffer cmd,
+                      RGHandle h,
+                      VkImageLayout oldLayout,
+                      VkImageLayout newLayout,
+                      VkPipelineStageFlags srcStage,
+                      VkPipelineStageFlags dstStage,
+                      VkAccessFlags srcAccess,
+                      VkAccessFlags dstAccess);
 
 private:
-    struct ImageResource {
+    struct ImageResource
+    {
         std::string name;
         VkImage image = VK_NULL_HANDLE;
         VkImageView view = VK_NULL_HANDLE;
@@ -76,7 +88,8 @@ private:
         bool owned = true; // false if imported
     };
 
-    struct BufferResource {
+    struct BufferResource
+    {
         std::string name;
         VkBuffer buffer = VK_NULL_HANDLE;
         VkDeviceMemory memory = VK_NULL_HANDLE;
@@ -90,4 +103,5 @@ private:
     std::vector<BufferResource> buffers_;
 };
 
-} }
+} // namespace Renderer
+} // namespace Engine

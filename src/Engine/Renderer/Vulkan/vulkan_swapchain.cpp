@@ -4,64 +4,88 @@
 #include <cstdint>
 #include <limits>
 
-namespace Engine { namespace Renderer {
+namespace Engine
+{
+namespace Renderer
+{
 
 // --- Query support details ---
-VulkanSwapchainSupportDetails VulkanSwapchain::querySupport(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface) {
+VulkanSwapchainSupportDetails VulkanSwapchain::querySupport(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface)
+{
     VulkanSwapchainSupportDetails details;
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &details.capabilities);
     uint32_t count = 0;
     vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &count, nullptr);
-    if (count) { details.formats.resize(count); vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &count, details.formats.data()); }
+    if (count)
+    {
+        details.formats.resize(count);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &count, details.formats.data());
+    }
     count = 0;
     vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &count, nullptr);
-    if (count) { details.presentModes.resize(count); vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &count, details.presentModes.data()); }
+    if (count)
+    {
+        details.presentModes.resize(count);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &count, details.presentModes.data());
+    }
     return details;
 }
 
-VkSurfaceFormatKHR VulkanSwapchain::chooseSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& available) {
+VkSurfaceFormatKHR VulkanSwapchain::chooseSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& available)
+{
     for (const auto& f : available)
         if (f.format == VK_FORMAT_B8G8R8A8_SRGB && f.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
             return f;
     return available[0];
 }
 
-VkPresentModeKHR VulkanSwapchain::choosePresentMode(const std::vector<VkPresentModeKHR>& available) {
+VkPresentModeKHR VulkanSwapchain::choosePresentMode(const std::vector<VkPresentModeKHR>& available)
+{
     for (const auto& m : available)
-        if (m == VK_PRESENT_MODE_MAILBOX_KHR) return m;
+        if (m == VK_PRESENT_MODE_MAILBOX_KHR)
+            return m;
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-VkExtent2D VulkanSwapchain::chooseExtent(const VkSurfaceCapabilitiesKHR& caps, uint32_t w, uint32_t h) {
-    if (caps.currentExtent.width != std::numeric_limits<uint32_t>::max()) return caps.currentExtent;
-    return { std::clamp(w, caps.minImageExtent.width, caps.maxImageExtent.width),
-             std::clamp(h, caps.minImageExtent.height, caps.maxImageExtent.height) };
+VkExtent2D VulkanSwapchain::chooseExtent(const VkSurfaceCapabilitiesKHR& caps, uint32_t w, uint32_t h)
+{
+    if (caps.currentExtent.width != std::numeric_limits<uint32_t>::max())
+        return caps.currentExtent;
+    return {std::clamp(w, caps.minImageExtent.width, caps.maxImageExtent.width),
+            std::clamp(h, caps.minImageExtent.height, caps.maxImageExtent.height)};
 }
 
 // --- Constructor / Destructor ---
 
-VulkanSwapchain::VulkanSwapchain(VkPhysicalDevice pd, VkDevice d, VkSurfaceKHR surf,
-                                 uint32_t w, uint32_t h, VkSwapchainKHR old)
-    : physicalDevice_(pd), device_(d) {
+VulkanSwapchain::VulkanSwapchain(VkPhysicalDevice pd, VkDevice d, VkSurfaceKHR surf, uint32_t w, uint32_t h, VkSwapchainKHR old)
+    : physicalDevice_(pd)
+    , device_(d)
+{
     createSwapchain(pd, d, surf, w, h, old);
     createImageViews(d);
     createRenderPass(d);
     createFramebuffers(d);
 }
 
-VulkanSwapchain::~VulkanSwapchain() {
-    if (device_) {
-        for (auto fb : framebuffers_) vkDestroyFramebuffer(device_, fb, nullptr);
-        if (renderPass_) vkDestroyRenderPass(device_, renderPass_, nullptr);
-        for (auto iv : imageViews_) vkDestroyImageView(device_, iv, nullptr);
-        if (swapchain_) vkDestroySwapchainKHR(device_, swapchain_, nullptr);
+VulkanSwapchain::~VulkanSwapchain()
+{
+    if (device_)
+    {
+        for (auto fb : framebuffers_)
+            vkDestroyFramebuffer(device_, fb, nullptr);
+        if (renderPass_)
+            vkDestroyRenderPass(device_, renderPass_, nullptr);
+        for (auto iv : imageViews_)
+            vkDestroyImageView(device_, iv, nullptr);
+        if (swapchain_)
+            vkDestroySwapchainKHR(device_, swapchain_, nullptr);
     }
 }
 
 // --- Private helpers ---
 
-void VulkanSwapchain::createSwapchain(VkPhysicalDevice pd, VkDevice d, VkSurfaceKHR surf,
-                                      uint32_t w, uint32_t h, VkSwapchainKHR old) {
+void VulkanSwapchain::createSwapchain(VkPhysicalDevice pd, VkDevice d, VkSurfaceKHR surf, uint32_t w, uint32_t h, VkSwapchainKHR old)
+{
     auto support = querySupport(pd, surf);
     auto fmt = chooseSurfaceFormat(support.formats);
     auto mode = choosePresentMode(support.presentModes);
@@ -103,23 +127,25 @@ void VulkanSwapchain::createSwapchain(VkPhysicalDevice pd, VkDevice d, VkSurface
     vkGetSwapchainImagesKHR(d, swapchain_, &count, images_.data());
 }
 
-void VulkanSwapchain::createImageViews(VkDevice d) {
+void VulkanSwapchain::createImageViews(VkDevice d)
+{
     imageViews_.resize(images_.size());
-    for (size_t i = 0; i < images_.size(); ++i) {
+    for (size_t i = 0; i < images_.size(); ++i)
+    {
         VkImageViewCreateInfo ci{};
         ci.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         ci.image = images_[i];
         ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
         ci.format = imageFormat_;
-        ci.components = {VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
-                         VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY};
+        ci.components = {VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY};
         ci.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
         if (vkCreateImageView(d, &ci, nullptr, &imageViews_[i]) != VK_SUCCESS)
             throw std::runtime_error("VulkanSwapchain: failed to create image view");
     }
 }
 
-void VulkanSwapchain::createRenderPass(VkDevice d) {
+void VulkanSwapchain::createRenderPass(VkDevice d)
+{
     VkAttachmentDescription colorAttachment{};
     colorAttachment.format = imageFormat_;
     colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -158,9 +184,11 @@ void VulkanSwapchain::createRenderPass(VkDevice d) {
         throw std::runtime_error("VulkanSwapchain: failed to create render pass");
 }
 
-void VulkanSwapchain::createFramebuffers(VkDevice d) {
+void VulkanSwapchain::createFramebuffers(VkDevice d)
+{
     framebuffers_.resize(imageViews_.size());
-    for (size_t i = 0; i < imageViews_.size(); ++i) {
+    for (size_t i = 0; i < imageViews_.size(); ++i)
+    {
         VkImageView attachments[] = {imageViews_[i]};
         VkFramebufferCreateInfo ci{};
         ci.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -175,4 +203,5 @@ void VulkanSwapchain::createFramebuffers(VkDevice d) {
     }
 }
 
-} }
+} // namespace Renderer
+} // namespace Engine

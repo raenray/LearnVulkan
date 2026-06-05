@@ -2,10 +2,14 @@
 #include <vulkan/vulkan.h>
 #include <cstdint>
 
-namespace Engine { namespace Renderer {
+namespace Engine
+{
+namespace Renderer
+{
 
 // RAII VkSampler wrapper
-struct GpuSamplerDesc {
+struct GpuSamplerDesc
+{
     VkFilter magFilter = VK_FILTER_LINEAR;
     VkFilter minFilter = VK_FILTER_LINEAR;
     VkSamplerMipmapMode mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
@@ -23,7 +27,8 @@ struct GpuSamplerDesc {
     VkBool32 unnormalizedCoordinates = VK_FALSE;
 };
 
-class GpuSampler {
+class GpuSampler
+{
 public:
     GpuSampler() = default;
     GpuSampler(VkDevice device, const GpuSamplerDesc& desc);
@@ -34,6 +39,7 @@ public:
     GpuSampler& operator=(GpuSampler&& other) noexcept;
 
     VkSampler get() const { return sampler_; }
+
     operator VkSampler() const { return sampler_; }
 
 private:
@@ -41,4 +47,5 @@ private:
     VkSampler sampler_ = VK_NULL_HANDLE;
 };
 
-} }
+} // namespace Renderer
+} // namespace Engine
